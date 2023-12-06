@@ -3,6 +3,15 @@ name = "day-01"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "2023_01_1"
+path = "src/bin/part-1.rs"
+
+[[bin]]
+name = "2023_01_2"
+path = "src/bin/part-2.rs"
+
+[build]
+target-dir = "target"
 
 [dependencies]
