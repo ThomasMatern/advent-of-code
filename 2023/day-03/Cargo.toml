@@ -1,0 +1,14 @@
+[package]
+name = "day-03"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "2023_03_1"
+path = "src/bin/part-1.rs"
+
+[[bin]]
+name = "2023_03_2"
+path = "src/bin/part-2.rs"
+
+[dependencies]
