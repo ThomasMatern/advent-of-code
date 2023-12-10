@@ -8,8 +8,17 @@ name = "2023_06_1"
 path = "src/bin/part-1.rs"
 
 [[bin]]
+name = "2023_06_1_fix"
+path = "src/bin/part-1-fix.rs"
+
+
+[[bin]]
 name = "2023_06_2"
 path = "src/bin/part-2.rs"
+
+[[bin]]
+name = "2023_06_2_brute_force"
+path = "src/bin/part-2-brute-force.rs"
 
 [dependencies]
 nom = "7.1.3"
