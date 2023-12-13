@@ -2,6 +2,10 @@
 
 use nom::{IResult, Parser, character::complete::{alphanumeric1, line_ending}, multi::{separated_list1, count}, sequence::separated_pair};
 use nom_supreme::{tag::complete::tag, ParserExt};
+use itertools::Itertools;
+use rayon::prelude::*;
+use indicatif::{ProgressIterator, ParallelProgressIterator};
+
 
 fn main() {
     let input = include_str!("./input-1.txt");
