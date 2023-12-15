@@ -1,7 +1,8 @@
 #![allow(unused_variables,unused_imports,dead_code, unused_mut)]
 
 use std::collections::HashSet;
-use std::hash::{Hash, Hasher, DefaultHasher};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 use nom::{IResult, Parser, character::complete::line_ending, multi::{separated_list1, many1}, branch::alt};
 use nom_supreme::tag::complete::tag;
