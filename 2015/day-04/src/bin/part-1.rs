@@ -5,7 +5,7 @@ use nom_supreme::{tag::complete::tag, ParserExt};
 use itertools::Itertools;
 use rayon::{prelude::*, iter::ParallelDrainFull};
 use indicatif::{ProgressIterator, ParallelProgressIterator};
-
+use md5;
 
 fn main() {
     let input = include_str!("./input-1.txt");
@@ -13,13 +13,13 @@ fn main() {
     dbg!(output);
 }
 
-fn parse(i: &str) -> IResult<&str, Vec<()>> {
-    todo!()
-}
-
 pub fn process(input: &str) -> String {
-    let (_, _) = parse(input).unwrap();
-    todo!()
+    (0..).find(|num| {
+        let value = format!("{}{}", input, num);
+        let hash = md5::compute(value);
+        format!("{:x}", hash).starts_with("00000")
+    }).unwrap().to_string()
+
 }
 
 #[cfg(test)]
@@ -28,7 +28,6 @@ mod tests {
 
     #[test]
     fn test_process() {
-        let input = "";
-        assert_eq!("", process(input));
+        assert_eq!("609043", process("abcdef"));
     }
 }

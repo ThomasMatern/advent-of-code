@@ -25,6 +25,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "aoc_2015-03"
+version = "0.1.0"
+dependencies = [
+ "indicatif",
+ "itertools",
+ "nom",
+ "nom-supreme",
+ "rayon",
+]
+
+[[package]]
+name = "aoc_2015-04"
+version = "0.1.0"
+dependencies = [
+ "indicatif",
+ "itertools",
+ "md5",
+ "nom",
+ "nom-supreme",
+ "rayon",
+]
+
+[[package]]
 name = "arrayvec"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -241,6 +264,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "day-17"
+version = "0.1.0"
+dependencies = [
+ "indicatif",
+ "itertools",
+ "nom",
+ "nom-supreme",
+ "rayon",
+]
+
+[[package]]
 name = "either"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -313,6 +347,12 @@ name = "libc"
 version = "0.2.151"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "302d7ab3130588088d277783b1e2d2e10c9e9e4a16dd9050e6ec93fb3e7048f4"
+
+[[package]]
+name = "md5"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "490cc448043f947bae3cbee9c203358d62dbee0db12107a74be5c30ccfd09771"
 
 [[package]]
 name = "memchr"
