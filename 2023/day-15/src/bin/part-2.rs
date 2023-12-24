@@ -1,8 +1,13 @@
-#![allow(unused_variables,unused_imports,dead_code, unused_mut)]
+#![allow(unused_variables, unused_imports, dead_code, unused_mut)]
 
-use nom::{IResult, Parser, character::complete::{alphanumeric1, one_of, digit0}, multi::separated_list1, sequence::tuple};
+use nom::{
+    IResult,
+    Parser,
+    character::complete::{ alphanumeric1, one_of, digit0 },
+    multi::separated_list1,
+    sequence::tuple,
+};
 use nom_supreme::tag::complete::tag;
-
 
 fn main() {
     let input = include_str!("./input-1.txt");
@@ -24,18 +29,12 @@ struct Step<'a> {
 
 fn parse(i: &str) -> IResult<&str, Vec<Step>> {
     separated_list1(
-        tag(","), 
-        tuple((
-            alphanumeric1,
-            one_of("=-"),
-            digit0
-            ))
-            .map(|(label, operation, focal_length)| {
-                let lens = Lens {label, focal_length: focal_length.parse().unwrap_or(0) };
-                Step {lens, operation}
-            })
-        )
-        .parse(i)
+        tag(","),
+        tuple((alphanumeric1, one_of("=-"), digit0)).map(|(label, operation, focal_length)| {
+            let lens = Lens { label, focal_length: focal_length.parse().unwrap_or(0) };
+            Step { lens, operation }
+        })
+    ).parse(i)
 }
 
 fn hash_one(mut acc: usize, value: usize) -> usize {
@@ -46,15 +45,12 @@ fn hash_one(mut acc: usize, value: usize) -> usize {
 }
 
 fn hash(value: &str) -> usize {
-    value.chars()
-        .fold(0, |acc, item| {
-            hash_one(acc, item as usize)
-        })
+    value.chars().fold(0, |acc, item| { hash_one(acc, item as usize) })
 }
 
 type ElfHashMap<'a> = Vec<Vec<Lens<'a>>>;
 
-fn lens_position(box_content: &Vec<Lens>, lens: &Lens) -> Option<usize> {
+fn lens_position(box_content: &[Lens], lens: &Lens) -> Option<usize> {
     box_content
         .iter()
         .enumerate()
@@ -67,36 +63,33 @@ pub fn process(i: &str) -> String {
 
     let mut hashmap: ElfHashMap = vec![vec![]; 256];
 
-    seq.iter()
-        .for_each(|step| {
-            let box_num = hash(step.lens.label);
-            let box_content = &mut hashmap[box_num];
-            match (step.operation, lens_position(box_content, &step.lens)) {
-                ('=', None) => box_content.push(step.lens),
-                ('=', Some(pos)) => {
-                    let _ = std::mem::replace(&mut box_content[pos], step.lens); 
-                    ()
-                },
-                ('-', None) => (),
-                ('-', Some(pos)) => {
-                    let _ = box_content.remove(pos);
-                    ()
-                },
-                _ => panic!("Invalid operation"),
-            };
-        });
+    seq.iter().for_each(|step| {
+        let box_num = hash(step.lens.label);
+        let box_content = &mut hashmap[box_num];
+        match (step.operation, lens_position(box_content, &step.lens)) {
+            ('=', None) => box_content.push(step.lens),
+            ('=', Some(pos)) => {
+                let _ = std::mem::replace(&mut box_content[pos], step.lens);
+            }
+            ('-', None) => (),
+            ('-', Some(pos)) => {
+                let _ = box_content.remove(pos);
+            }
+            _ => panic!("Invalid operation"),
+        };
+    });
 
-    hashmap.iter()
+    hashmap
+        .iter()
         .enumerate()
-        .flat_map(|(box_idx, box_content)| 
+        .flat_map(|(box_idx, box_content)|
             box_content
                 .iter()
                 .enumerate()
-                .map(move |(lens_idx, lens)| 
-                    (box_idx+1) * (lens_idx+1) * lens.focal_length
-                )
-            )
-        .sum::<usize>().to_string()
+                .map(move |(lens_idx, lens)| (box_idx + 1) * (lens_idx + 1) * lens.focal_length)
+        )
+        .sum::<usize>()
+        .to_string()
 }
 
 #[cfg(test)]

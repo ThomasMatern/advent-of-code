@@ -1,9 +1,16 @@
-#![allow(unused_variables,unused_imports,dead_code, unused_mut)]
+#![allow(unused_variables, unused_imports, dead_code, unused_mut)]
 
-use std::collections::{BTreeMap, VecDeque};
+use std::collections::{ BTreeMap, VecDeque };
 
-use nom::{IResult, Parser, character::complete::{line_ending, alpha1}, multi::separated_list1, branch::alt, sequence::tuple};
-use nom_supreme::{tag::complete::tag, ParserExt};
+use nom::{
+    IResult,
+    Parser,
+    character::complete::{ line_ending, alpha1 },
+    multi::separated_list1,
+    branch::alt,
+    sequence::tuple,
+};
+use nom_supreme::{ tag::complete::tag, ParserExt };
 
 fn main() {
     let input = include_str!("./input-1.txt");
@@ -38,18 +45,16 @@ struct ModuleConnections<'a> {
 
 fn parse(i: &str) -> IResult<&str, Vec<(&str, ModuleConnections)>> {
     separated_list1(
-        line_ending, 
+        line_ending,
         tuple((
             alt((
                 alpha1.preceded_by(tag("%")).map(|name| (name, Module::FF)),
                 alpha1.preceded_by(tag("&")).map(|name| (name, Module::CJ)),
-                tag("broadcaster").map(|name| (name, Module::BC))
+                tag("broadcaster").map(|name| (name, Module::BC)),
             )).terminated(tag(" -> ")),
-            separated_list1(
-                tag(", "),
-                alpha1)
-            )).map(|((name, module), connections)| (name, ModuleConnections{module, connections}))
-        ).parse(i)
+            separated_list1(tag(", "), alpha1),
+        )).map(|((name, module), connections)| (name, ModuleConnections { module, connections }))
+    ).parse(i)
 }
 
 pub fn process(input: &str) -> String {
@@ -57,11 +62,11 @@ pub fn process(input: &str) -> String {
     use Module::*;
 
     let (_, modules) = parse(input).unwrap();
-    let map:BTreeMap<&str, ModuleConnections> = BTreeMap::from_iter(modules);
-    let mut state:BTreeMap<&str, ModuleState> = BTreeMap::new();
+    let map: BTreeMap<&str, ModuleConnections> = BTreeMap::from_iter(modules);
+    let mut state: BTreeMap<&str, ModuleState> = BTreeMap::new();
 
-    for (module_name, _) in &map {
-        state.insert(&module_name, ModuleState{inputs: BTreeMap::new(), output: Low});
+    for module_name in map.keys() {
+        state.insert(module_name, ModuleState { inputs: BTreeMap::new(), output: Low });
     }
 
     for (module_name, module) in &map {
@@ -78,16 +83,16 @@ pub fn process(input: &str) -> String {
     let mut pulses: VecDeque<(&str, State)> = VecDeque::new();
     let mut broadcast_counter = 0;
     loop {
-        if pulses.len() == 0 {
+        if pulses.is_empty() {
             dbg!(broadcast_counter += 1);
             if broadcast_counter > 1000 {
-                break
+                break;
             }
 
             pulses.push_back(("broadcaster", Low));
             low_pulses += 1;
         }
-        
+
         let mut next_pulses: VecDeque<(&str, State)> = VecDeque::new();
         for (from_module_name, pulse) in pulses {
             for &to_module_name in &map[&from_module_name].connections {
@@ -104,24 +109,23 @@ pub fn process(input: &str) -> String {
                         FF => if pulse == Low {
                             if to_module_state.output == Low {
                                 to_module_state.output = High;
-                                next_pulses.push_back((&to_module_name, High))
+                                next_pulses.push_back((&to_module_name, High));
                             } else {
                                 to_module_state.output = Low;
-                                next_pulses.push_back((&to_module_name, Low))
+                                next_pulses.push_back((&to_module_name, Low));
                             }
-                        },
+                        }
                         CJ => {
                             if to_module_state.inputs.iter().all(|(_, &s)| s == High) {
                                 next_pulses.push_back((&to_module_name, Low));
                             } else {
                                 next_pulses.push_back((&to_module_name, High));
                             }
-                        },
+                        }
                         BC => panic!("cannot send to broadcast module"),
                     }
                 }
             }
-
         }
         pulses = next_pulses;
     }

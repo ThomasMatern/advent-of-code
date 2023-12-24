@@ -1,9 +1,15 @@
 // #![allow(unused_variables, unused_imports, dead_code, unused_must_use)]
 
-use std::{ops::Range, collections::BTreeMap};
+use std::{ ops::Range, collections::BTreeMap };
 use itertools::Itertools;
 
-use nom::{IResult, sequence::tuple, character::complete::{self, alpha1, space1, line_ending}, multi::{many0, fold_many1, separated_list0}, bytes::complete::tag};
+use nom::{
+    IResult,
+    sequence::tuple,
+    character::complete::{ self, alpha1, space1, line_ending },
+    multi::{ many0, fold_many1, separated_list0 },
+    bytes::complete::tag,
+};
 
 fn main() {
     let input = include_str!("./input-1.txt");
@@ -20,15 +26,22 @@ struct MapRange {
 
 impl MapRange {
     fn parse(i: &str) -> IResult<&str, MapRange> {
-        let (i, (_, dst_start, _, src_start, _, size)) = tuple((line_ending, complete::i64, space1, complete::i64, space1, complete::i64))(i)?;
-        Ok((i, MapRange{src_start, src_end: src_start + size, offset: dst_start-src_start}))
+        let (i, (_, dst_start, _, src_start, _, size)) = tuple((
+            line_ending,
+            complete::i64,
+            space1,
+            complete::i64,
+            space1,
+            complete::i64,
+        ))(i)?;
+        Ok((i, MapRange { src_start, src_end: src_start + size, offset: dst_start - src_start }))
     }
 
     fn map_range(&self, range: &Range<i64>) -> (Range<i64>, Range<i64>) {
         // returns the mapped range and any remainder
         let start = self.src_start.max(range.start);
         let end = self.src_end.min(range.end);
-        (start+self.offset..end+self.offset, end.max(range.start)..range.end)
+        (start + self.offset..end + self.offset, end.max(range.start)..range.end)
     }
 }
 
@@ -39,32 +52,29 @@ struct Map {
 
 impl Map {
     fn parse(i: &str) -> IResult<&str, Map> {
-        let (i, _) = tuple(
-            (many0(line_ending),
-            alpha1, tag("-to-"), alpha1,
-            tag(" map:")))(i)?;
-  
+        let (i, _) = tuple((many0(line_ending), alpha1, tag("-to-"), alpha1, tag(" map:")))(i)?;
+
         let (i, ranges) = fold_many1(
-                MapRange::parse,
-                BTreeMap::new,
-                |mut acc: BTreeMap<_,_>, item| {
-                  acc.insert(item.src_start, item);
-                  acc
-                }
-              )(i)?;
-        Ok((i, Map {ranges}))
+            MapRange::parse,
+            BTreeMap::new,
+            |mut acc: BTreeMap<_, _>, item| {
+                acc.insert(item.src_start, item);
+                acc
+            }
+        )(i)?;
+        Ok((i, Map { ranges }))
     }
 
     fn map_range(&self, from: &Range<i64>) -> Vec<Range<i64>> {
         let mut result: Vec<Range<i64>> = Vec::new();
         let mut remainder = from.clone();
-        for (_, range) in &self.ranges {          
+        for range in self.ranges.values() {
             if range.src_start > remainder.start {
                 // map stuff before this ranges
                 result.push(from.start..range.src_start);
                 remainder = range.src_start..remainder.end;
             }
-    
+
             let (mapped, rem) = range.map_range(&remainder);
             remainder = rem;
             if !mapped.is_empty() {
@@ -82,44 +92,39 @@ impl Map {
     }
 
     fn map_ranges(&self, from: Vec<Range<i64>>) -> Vec<Range<i64>> {
-        from
-            .iter()
-            .flat_map(|r| {
-                self.map_range(r)
-            }).collect_vec()
+        from.iter()
+            .flat_map(|r| { self.map_range(r) })
+            .collect_vec()
     }
-
 }
 
 fn parse_seeds(i: &str) -> IResult<&str, Vec<Range<i64>>> {
-    let (i, (_, _, values)) = tuple((tag("seeds:"), space1, separated_list0(space1, complete::i64)))(i)?;
+    let (i, (_, _, values)) = tuple((
+        tag("seeds:"),
+        space1,
+        separated_list0(space1, complete::i64),
+    ))(i)?;
     let seeds = values
         .chunks(2)
-        .map(|chunk| Range{start: chunk[0], end: chunk[0] + chunk[1]})
+        .map(|chunk| Range { start: chunk[0], end: chunk[0] + chunk[1] })
         .collect::<Vec<_>>();
     Ok((i, seeds))
 }
 
 pub fn process(input: &str) -> String {
     let (i, seeds) = parse_seeds(input).unwrap();
-    let (_i, maps) = fold_many1(
-        Map::parse,
-        Vec::new,
-        |mut acc: Vec<_>, item| {
-            acc.push(item);
-            acc
-          }
-        )(i).unwrap();
+    let (_i, maps) = fold_many1(Map::parse, Vec::new, |mut acc: Vec<_>, item| {
+        acc.push(item);
+        acc
+    })(i).unwrap();
 
-    maps
+    maps.iter()
+        .fold(seeds, |acc, map| { map.map_ranges(acc) })
         .iter()
-        .fold(
-            seeds,
-            |acc, map| {
-                map.map_ranges(acc)
-            }
-        ).iter().map(|r| r.start).min().unwrap().to_string()
-
+        .map(|r| r.start)
+        .min()
+        .unwrap()
+        .to_string()
 }
 
 #[cfg(test)]
@@ -128,7 +133,8 @@ mod tests {
 
     #[test]
     fn test_process() {
-        let input = "seeds: 79 14 55 13
+        let input =
+            "seeds: 79 14 55 13
 
 seed-to-soil map:
 50 98 2

@@ -1,8 +1,13 @@
 // #![allow(unused_variables,unused_imports,dead_code, unused_mut)]
 
-use nom::{IResult, Parser, character::complete::{self, alphanumeric1, line_ending, anychar}, multi::separated_list1, sequence::{tuple, delimited}};
-use nom_supreme::{tag::complete::tag, ParserExt};
-
+use nom::{
+    IResult,
+    Parser,
+    character::complete::{ self, alphanumeric1, line_ending, anychar },
+    multi::separated_list1,
+    sequence::{ tuple, delimited },
+};
+use nom_supreme::{ tag::complete::tag, ParserExt };
 
 fn main() {
     let input = include_str!("./input-1.txt");
@@ -34,7 +39,6 @@ struct Instruction {
     distance: isize,
 }
 
-
 fn parse(i: &str) -> IResult<&str, Vec<Instruction>> {
     use Direction::*;
 
@@ -43,18 +47,18 @@ fn parse(i: &str) -> IResult<&str, Vec<Instruction>> {
         tuple((
             anychar.terminated(tag(" ")),
             complete::u32.terminated(tag(" ")).map(|d| d as isize),
-            delimited(tag("(#"), alphanumeric1, tag(")")).map(|s:&str| s)
+            delimited(tag("(#"), alphanumeric1, tag(")")).map(|s: &str| s),
         )).map(|(_, _, colour)| {
             let direction = match &colour[5..] {
                 "0" => Right,
                 "1" => Down,
                 "2" => Left,
                 "3" => Up,
-                _ => panic!("Invalid direction")
+                _ => panic!("Invalid direction"),
             };
-            let distance = isize::from_str_radix(&colour[0..5], 16).unwrap() as isize;
-            
-            Instruction { direction, distance} 
+            let distance = isize::from_str_radix(&colour[0..5], 16).unwrap();
+
+            Instruction { direction, distance }
         })
     ).parse(i)
 }
@@ -64,24 +68,30 @@ type Coord = (isize, isize);
 pub fn process(input: &str) -> String {
     let (_, instructions) = parse(input).unwrap();
     let mut polygon: Vec<Coord> = vec![];
-    let mut pos:Coord = (0, 0);
+    let mut pos: Coord = (0, 0);
     let mut boundary_length = 0;
 
     for instruction in instructions {
         let direction = instruction.direction.direction();
         polygon.push(pos);
-        pos = (pos.0+direction.0*instruction.distance, pos.1+direction.1*instruction.distance);
+        pos = (
+            pos.0 + direction.0 * instruction.distance,
+            pos.1 + direction.1 * instruction.distance,
+        );
         boundary_length += instruction.distance;
     }
 
     // shoelace
-    let area = (0..polygon.len()).map(|idx| {
-        let prev_idx = (idx + polygon.len() - 1) % polygon.len();
-        let next_idx = (idx + 1) % polygon.len();
+    let area =
+        (0..polygon.len())
+            .map(|idx| {
+                let prev_idx = (idx + polygon.len() - 1) % polygon.len();
+                let next_idx = (idx + 1) % polygon.len();
 
-        polygon[idx].0 * (polygon[prev_idx].1 - polygon[next_idx].1)
-
-    }).sum::<isize>().abs() / 2;
+                polygon[idx].0 * (polygon[prev_idx].1 - polygon[next_idx].1)
+            })
+            .sum::<isize>()
+            .abs() / 2;
 
     // Pick's
     let interior = area - boundary_length / 2 + 1;
@@ -95,7 +105,8 @@ mod tests {
 
     #[test]
     fn test_process() {
-        let input = "R 6 (#70c710)
+        let input =
+            "R 6 (#70c710)
 D 5 (#0dc571)
 L 2 (#5713f0)
 D 2 (#d2c081)

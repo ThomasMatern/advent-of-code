@@ -1,9 +1,16 @@
-#![allow(unused_variables,unused_imports,dead_code)]
+#![allow(unused_variables, unused_imports, dead_code)]
 
 use std::collections::BTreeMap;
 
-use nom::{IResult, Parser, character::complete::{self, line_ending, one_of, alpha1}, multi::separated_list1, sequence::{separated_pair, delimited, tuple}, branch::alt};
-use nom_supreme::{tag::complete::tag, ParserExt};
+use nom::{
+    IResult,
+    Parser,
+    character::complete::{ self, line_ending, one_of, alpha1 },
+    multi::separated_list1,
+    sequence::{ separated_pair, delimited, tuple },
+    branch::alt,
+};
+use nom_supreme::{ tag::complete::tag, ParserExt };
 
 fn main() {
     let input = include_str!("./input-1.txt");
@@ -23,7 +30,7 @@ struct Workflow<'a> {
 #[derive(Debug, Copy, Clone)]
 struct Part {
     x: i32,
-    m: i32, 
+    m: i32,
     a: i32,
     s: i32,
 }
@@ -35,22 +42,25 @@ fn parse(i: &str) -> IResult<&str, (BTreeMap<&str, Workflow>, Vec<Part>)> {
             tuple((
                 alpha1,
                 delimited(
-                    tag("{"), 
+                    tag("{"),
                     separated_list1(
                         tag(","),
                         alt((
                             tuple((
-                                alpha1, 
+                                alpha1,
                                 one_of("<>"),
                                 complete::i32.terminated(tag(":")),
-                                alpha1
-                            )).map(|(var, test, value, target)| Condition::Check(var, test, value, target)),
-                            alpha1.map(|target| Condition::Unconditional(target)),
+                                alpha1,
+                            )).map(|(var, test, value, target)|
+                                Condition::Check(var, test, value, target)
+                            ),
+                            alpha1.map(Condition::Unconditional),
                         ))
                     ),
-                    tag("}"))
-                )).map(|(name, rules)| (name, Workflow{rules}))
-        ).map(|workflows| BTreeMap::from_iter(workflows)),
+                    tag("}")
+                ),
+            )).map(|(name, rules)| (name, Workflow { rules }))
+        ).map(BTreeMap::from_iter),
         tuple((line_ending, line_ending)),
         separated_list1(
             line_ending,
@@ -61,13 +71,12 @@ fn parse(i: &str) -> IResult<&str, (BTreeMap<&str, Workflow>, Vec<Part>)> {
                     complete::i32.preceded_by(tag("m=")).terminated(tag(",")),
                     complete::i32.preceded_by(tag("a=")).terminated(tag(",")),
                     complete::i32.preceded_by(tag("s=")),
-                )).map(|(x, m, a, s)| Part{x, m, a, s}),
+                )).map(|(x, m, a, s)| Part { x, m, a, s }),
 
-                
                 tag("}")
             )
         )
-        ).parse(i)
+    ).parse(i)
 }
 
 pub fn process(input: &str) -> String {
@@ -77,39 +86,42 @@ pub fn process(input: &str) -> String {
 
     for part in parts {
         let mut dest = "in";
-        
+
         loop {
             let workflow = &workflows[dest];
             for rule in &workflow.rules {
                 match *rule {
                     Condition::Check(var, test, value, target) => {
-                        if match (var, test) {
-                            ("x", '<') => part.x < value,
-                            ("x", '>') => part.x > value,
-                            ("m", '<') => part.m < value,
-                            ("m", '>') => part.m > value,
-                            ("a", '<') => part.a < value,
-                            ("a", '>') => part.a > value,
-                            ("s", '<') => part.s < value,
-                            ("s", '>') => part.s > value,
-                            x => panic!("Unhandled {:?}", x)
-                        } {
+                        #[allow(unused_parens)]
+                        if (
+                            match (var, test) {
+                                ("x", '<') => part.x < value,
+                                ("x", '>') => part.x > value,
+                                ("m", '<') => part.m < value,
+                                ("m", '>') => part.m > value,
+                                ("a", '<') => part.a < value,
+                                ("a", '>') => part.a > value,
+                                ("s", '<') => part.s < value,
+                                ("s", '>') => part.s > value,
+                                x => panic!("Unhandled {:?}", x),
+                            }
+                        ) {
                             dest = target;
-                            break
+                            break;
                         }
-                    },
+                    }
                     Condition::Unconditional(target) => {
                         dest = target;
-                        break
+                        break;
                     }
                 }
             }
             if dest == "A" {
                 result += part.x + part.m + part.a + part.s;
-                break
+                break;
             }
             if dest == "R" {
-                break
+                break;
             }
         }
     }
@@ -123,7 +135,8 @@ mod tests {
 
     #[test]
     fn test_process() {
-        let input = "px{a<2006:qkq,m>2090:A,rfg}
+        let input =
+            "px{a<2006:qkq,m>2090:A,rfg}
 pv{a>1716:R,A}
 lnx{m>1548:A,A}
 rfg{s<537:gd,x>2440:R,A}

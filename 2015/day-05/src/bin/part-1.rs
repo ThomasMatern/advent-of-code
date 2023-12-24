@@ -1,15 +1,16 @@
 #![allow(unused_variables, unused_imports, dead_code, unused_mut)]
 
-use indicatif::{ParallelProgressIterator, ProgressIterator};
+use indicatif::{ ParallelProgressIterator, ProgressIterator };
 use itertools::Itertools;
 use nom::{
-    character::complete::{self, alphanumeric1, digit1, line_ending},
-    multi::{count, separated_list1},
-    sequence::{separated_pair, tuple},
-    IResult, Parser,
+    character::complete::{ self, alphanumeric1, digit1, line_ending },
+    multi::{ count, separated_list1 },
+    sequence::{ separated_pair, tuple },
+    IResult,
+    Parser,
 };
-use nom_supreme::{tag::complete::tag, ParserExt};
-use rayon::{iter::ParallelDrainFull, prelude::*};
+use nom_supreme::{ tag::complete::tag, ParserExt };
+use rayon::{ iter::ParallelDrainFull, prelude::* };
 
 fn main() {
     let input = include_str!("./input-1.txt");
@@ -26,14 +27,19 @@ pub fn process(input: &str) -> String {
 
     lines
         .iter()
-        .filter(|line| line.chars().filter(|&c| "aeiou".contains(c)).count() >= 3)
+        .filter(
+            |line|
+                line
+                    .chars()
+                    .filter(|&c| "aeiou".contains(c))
+                    .count() >= 3
+        )
         .filter(|line| {
             line.chars()
                 .zip(line.chars().skip(1))
-                .find(|(a, b)| a == b)
-                .is_some()
+                .any(|(a, b)| a == b)
         })
-        .filter(|line| !(["ab", "cd", "pq", "xy"].iter().any(|pt| line.contains(pt))))
+        .filter(|line| !["ab", "cd", "pq", "xy"].iter().any(|pt| line.contains(pt)))
         .count()
         .to_string()
 }

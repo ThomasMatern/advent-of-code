@@ -1,4 +1,4 @@
-#![allow(unused_variables,unused_imports,dead_code,unused_mut)]
+#![allow(unused_variables, unused_imports, dead_code, unused_mut)]
 
 use std::collections::BTreeMap;
 
@@ -11,11 +11,14 @@ fn main() {
 type Coord = (isize, isize);
 type Map = BTreeMap<Coord, Vec<Coord>>;
 
-fn add_tile(m: &mut Map, coord: (usize, usize), offset_1: Coord, offset_2:Coord) {
-    m.insert((coord.0 as isize, coord.1 as isize),  
+fn add_tile(m: &mut Map, coord: (usize, usize), offset_1: Coord, offset_2: Coord) {
+    m.insert(
+        (coord.0 as isize, coord.1 as isize),
         vec![
-            (coord.0 as isize + offset_1.0, coord.1 as isize + offset_1.1),
-            (coord.0 as isize + offset_2.0, coord.1 as isize + offset_2.1)]);
+            ((coord.0 as isize) + offset_1.0, (coord.1 as isize) + offset_1.1),
+            ((coord.0 as isize) + offset_2.0, (coord.1 as isize) + offset_2.1)
+        ]
+    );
 }
 
 fn parse(i: &str) -> (Coord, Map) {
@@ -28,28 +31,32 @@ fn parse(i: &str) -> (Coord, Map) {
         .map(|(y, line)| {
             line.chars()
                 .enumerate()
-                .map(|(x, ch)| match ch {
-                    '|' => add_tile(&mut map, (x, y), (0, -1), (0, 1)),
-                    '-' => add_tile(&mut map, (x, y), (-1, 0), (1, 0)),
-                    'L' => add_tile(&mut map, (x, y), (0, -1), (1, 0)),
-                    'J' => add_tile(&mut map, (x, y), (0, -1), (-1, 0)),
-                    '7' => add_tile(&mut map, (x, y), (0, 1), (-1, 0)),
-                    'F' => add_tile(&mut map, (x, y), (0, 1), (1, 0)),
-                    '.' => (),
-                    'S' => start_pos = (x as isize, y as isize),
-                    c => panic!("Invalid character in map {}", c)
+                .map(|(x, ch)| {
+                    match ch {
+                        '|' => add_tile(&mut map, (x, y), (0, -1), (0, 1)),
+                        '-' => add_tile(&mut map, (x, y), (-1, 0), (1, 0)),
+                        'L' => add_tile(&mut map, (x, y), (0, -1), (1, 0)),
+                        'J' => add_tile(&mut map, (x, y), (0, -1), (-1, 0)),
+                        '7' => add_tile(&mut map, (x, y), (0, 1), (-1, 0)),
+                        'F' => add_tile(&mut map, (x, y), (0, 1), (1, 0)),
+                        '.' => (),
+                        'S' => {
+                            start_pos = (x as isize, y as isize);
+                        }
+                        c => panic!("Invalid character in map {}", c),
+                    }
                 })
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
-    
 
-    let mut start_connections:Vec<Coord> = Vec::new();
+    let mut start_connections: Vec<Coord> = Vec::new();
 
-    let _ = map.iter()
+    let _ = map
+        .iter()
         .map(|(coord, connections)| {
             if connections.contains(&start_pos) {
-                start_connections.push(coord.clone());
+                start_connections.push(*coord);
             }
         })
         .collect::<Vec<_>>();
@@ -63,10 +70,11 @@ pub fn process(input: &str) -> String {
     let mut prev = start_pos;
     let mut count = 0;
     loop {
-        let Some(new) = map.get(&pos).unwrap()
+        let Some(new) = map
+            .get(&pos)
+            .unwrap()
             .iter()
-            .find(|connection| connection != &&prev)
-        else {
+            .find(|connection| connection != &&prev) else {
             panic!("No direction found");
         };
         count += 1;

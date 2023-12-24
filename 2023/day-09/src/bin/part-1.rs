@@ -1,7 +1,11 @@
-#![allow(unused_variables,unused_imports,dead_code, unused_mut)]
+#![allow(unused_variables, unused_imports, dead_code, unused_mut)]
 
-use nom::{IResult, Parser, character::complete::{line_ending, space1, self}, multi::separated_list1};
-
+use nom::{
+    IResult,
+    Parser,
+    character::complete::{ line_ending, space1, self },
+    multi::separated_list1,
+};
 
 fn main() {
     let input = include_str!("./input-1.txt");
@@ -10,11 +14,13 @@ fn main() {
 }
 
 fn parse(i: &str) -> IResult<&str, Vec<Vec<isize>>> {
-    let (i, histories) = 
-        separated_list1(line_ending,
-            separated_list1(space1, complete::i128.map(|x| x as isize))
+    let (i, histories) = separated_list1(
+        line_ending,
+        separated_list1(
+            space1,
+            complete::i128.map(|x| x as isize)
         )
-        .parse(i)?;
+    ).parse(i)?;
     Ok((i, histories))
 }
 
@@ -23,21 +29,23 @@ pub fn process(i: &str) -> String {
     histories
         .iter()
         .map(|row| {
-            let mut last_column:Vec<isize> = Vec::new();
-            let mut row = row.clone();   
+            let mut last_column: Vec<isize> = Vec::new();
+            let mut row = row.clone();
             loop {
                 last_column.push(*row.last().unwrap());
-                row = row.iter().zip(row.iter().skip(1))
-                    .map(|(&a, &b)| b-a)
+                row = row
+                    .iter()
+                    .zip(row.iter().skip(1))
+                    .map(|(&a, &b)| b - a)
                     .collect::<Vec<_>>();
-                if row.len() == 0 || row.iter().all(|&x| x == 0) {
+                if row.is_empty() || row.iter().all(|&x| x == 0) {
                     break;
                 }
             }
             last_column.iter().sum::<isize>()
-            
         })
-        .sum::<isize>().to_string()
+        .sum::<isize>()
+        .to_string()
 }
 
 #[cfg(test)]

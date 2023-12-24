@@ -1,8 +1,12 @@
-#![allow(unused_variables,unused_imports,dead_code, unused_mut)]
+#![allow(unused_variables, unused_imports, dead_code, unused_mut)]
 
-use std::collections::{HashSet, BinaryHeap};
-use nom::{IResult, Parser, character::complete::{self, line_ending}, multi::{separated_list1, many1}};
-
+use std::collections::{ HashSet, BinaryHeap };
+use nom::{
+    IResult,
+    Parser,
+    character::complete::{ self, line_ending },
+    multi::{ separated_list1, many1 },
+};
 
 fn main() {
     let input = include_str!("./input-1.txt");
@@ -15,7 +19,6 @@ fn parse(i: &str) -> IResult<&str, Vec<Vec<isize>>> {
         line_ending,
         many1(complete::one_of("0123456789").map(|d| d.to_digit(10).unwrap() as isize))
     ).parse(i)
-
 }
 
 type Coord = (isize, isize);
@@ -66,21 +69,23 @@ impl Direction {
     fn walk(&self, coord: &Coord) -> (Coord, Self) {
         use Direction::*;
         match self {
-            North(s) => ((coord.0, coord.1-1), North(s+1)),
-            East(s) => ((coord.0+1, coord.1), East(s+1)),
-            South(s) => ((coord.0, coord.1+1), South(s+1)),
-            West(s) => ((coord.0-1, coord.1), West(s+1)),
+            North(s) => ((coord.0, coord.1 - 1), North(s + 1)),
+            East(s) => ((coord.0 + 1, coord.1), East(s + 1)),
+            South(s) => ((coord.0, coord.1 + 1), South(s + 1)),
+            West(s) => ((coord.0 - 1, coord.1), West(s + 1)),
             Start => panic!("Cannot walk in Start direction"),
         }
     }
 }
 
-
 type QueueEntry = (isize, Coord, Direction); // cost(negative), position, direction
 type HashEntry = (Coord, Direction); // position, direction
 
 fn in_map(coord: &Coord, map: &Vec<Vec<isize>>) -> bool {
-    coord.0 >= 0 && coord.1 >= 0 && coord.0 < map[0].len() as isize && coord.1 < map.len() as isize
+    coord.0 >= 0 &&
+        coord.1 >= 0 &&
+        coord.0 < (map[0].len() as isize) &&
+        coord.1 < (map.len() as isize)
 }
 
 pub fn process(input: &str) -> String {
@@ -88,7 +93,6 @@ pub fn process(input: &str) -> String {
 
     let (_, map) = parse(input).unwrap();
 
-    
     let mut queue: BinaryHeap<QueueEntry> = BinaryHeap::new();
     let mut seen: HashSet<HashEntry> = HashSet::new();
 
@@ -98,8 +102,8 @@ pub fn process(input: &str) -> String {
             continue;
         }
 
-        if coord == (((map[0].len()-1) as isize, (map.len()-1) as isize)) && dir.num_steps() >= 4 {
-            return (-1*cost).to_string();
+        if coord == ((map[0].len() - 1) as isize, (map.len() - 1) as isize) && dir.num_steps() >= 4 {
+            return (-cost).to_string();
         }
 
         if seen.contains(&(coord, dir)) {
@@ -110,7 +114,7 @@ pub fn process(input: &str) -> String {
         if dir.num_steps() < 10 {
             let (ncoord, ndir) = dir.walk(&coord);
             if in_map(&ncoord, &map) {
-                queue.push((cost-map[ncoord.1 as usize][ncoord.0 as usize], ncoord, ndir));
+                queue.push((cost - map[ncoord.1 as usize][ncoord.0 as usize], ncoord, ndir));
             }
         }
 
@@ -118,7 +122,7 @@ pub fn process(input: &str) -> String {
             for ndir in [dir.left(), dir.right()] {
                 let (ncoord, ndir) = ndir.walk(&coord);
                 if in_map(&ncoord, &map) {
-                    queue.push((cost-map[ncoord.1 as usize][ncoord.0 as usize], ncoord, ndir));
+                    queue.push((cost - map[ncoord.1 as usize][ncoord.0 as usize], ncoord, ndir));
                 }
             }
         }
@@ -132,7 +136,8 @@ mod tests {
 
     #[test]
     fn test_process() {
-        let input = "\
+        let input =
+            "\
 2413432311323
 3215453535623
 3255245654254
